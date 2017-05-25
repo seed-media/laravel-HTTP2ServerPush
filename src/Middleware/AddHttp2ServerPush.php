@@ -86,7 +86,33 @@ class AddHttp2ServerPush
     {
         $crawler = $this->getCrawler($response);
 
-        return collect($crawler->filter('link, script[src], img[src]')->extract(['src', 'href']));
+        return $this->fetchInlineStyledNodes($response)->merge(
+            collect(
+                $crawler->filter('link, script[src], img[src]')
+                        ->extract(['src', 'href'])
+            )
+        );
+    }
+
+    /**
+     * Get all nodes with inline styling and extract URLs/URIs
+     *
+     * @param \Illuminate\Http\Response $response
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function fetchInlineStyledNodes($response)
+    {
+        $crawler = $this->getCrawler($response);
+        $regex = '!(?:https?)://(?:[\w_-]+(?:(?:\.[\w_-]+)+))'
+               . '(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?!i';
+
+        return collect($crawler->filter('*[style]')->extract(['style']))
+            ->map(function ($style) use ($regex) {
+                preg_match_all($regex, $style, $matches);
+
+                return $matches[0];
+            });
     }
 
     /**
