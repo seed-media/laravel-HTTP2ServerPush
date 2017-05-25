@@ -133,6 +133,7 @@ class AddHttp2ServerPush
             '.JPEG' => 'image',
             '.PNG'  => 'image',
             '.TIFF' => 'image',
+            '.CLOUDINARY' => 'image',
         ];
 
         $swapParameterOrder = app()->version() <= 5.2;
